@@ -68,7 +68,7 @@ app.get('/', function (req, res) {
 								<span class="item-text">${item.text}</span>
 								<div>
 									<button data-id="${item._id}" class="edit-me btn btn-secondary btn-sm mr-1">Edit</button>
-									<button class="delete-me btn btn-danger btn-sm">Delete</button>
+									<button data-id="${item._id}" class="delete-me btn btn-danger btn-sm">Delete</button>
 								</div>
 							</li>`;
 								})
@@ -95,4 +95,14 @@ app.post('/update-item', function (req, res) {
 			res.send('Success');
 		},
 	);
+});
+
+app.post('/delete-item', (req, res) => {
+	// method to delte is called delete one
+	// first argument is the docuement you want to delte
+	// second arguement is the function that is going to run once the action is complete
+
+	db.collection('items').deleteOne({ _id: new mongodb.ObjectId(req.body.id) }, () => {
+		res.send('Sucess');
+	});
 });
