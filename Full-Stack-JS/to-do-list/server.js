@@ -44,9 +44,10 @@ app.get('/', function (req, res) {
 						<h1 class="display-4 text-center py-1">To-Do App</h1>
 			
 						<div class="jumbotron p-3 shadow-sm">
-							<form action="/create-item" method="POST">
+							<form id="create-form" action="/create-item" method="POST">
 								<div class="d-flex align-items-center">
 									<input
+										id="create-field"
 										name="item"
 										autofocus
 										autocomplete="off"
@@ -59,7 +60,7 @@ app.get('/', function (req, res) {
 							</form>
 						</div>
 			
-						<ul class="list-group pb-5">
+						<ul id="item-list" class="list-group pb-5">
 							${items
 								.map((item) => {
 									return `<li
@@ -82,8 +83,9 @@ app.get('/', function (req, res) {
 });
 
 app.post('/create-item', function (req, res) {
-	db.collection('items').insertOne({ text: req.body.item }, function () {
-		res.redirect('/');
+	db.collection('items').insertOne({ text: req.body.text }, function (err, info) {
+		// this is how you give the front end access to the mongodb id
+		res.json(info.ops[0]);
 	});
 });
 
