@@ -22,6 +22,7 @@ mongodb.connect(
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// the _id in the html is from the data
 app.get('/', function (req, res) {
 	db.collection('items')
 		.find()
@@ -70,7 +71,7 @@ app.get('/', function (req, res) {
 						>
 							<span class="item-text">${item.text}</span>
 							<div>
-								<button class="edit-me btn btn-secondary btn-sm mr-1">Edit</button>
+								<button data-id="${item._id}" class="edit-me btn btn-secondary btn-sm mr-1">Edit</button>
 								<button class="delete-me btn btn-danger btn-sm">Delete</button>
 							</div>
 						</li>`;
@@ -92,6 +93,17 @@ app.post('/create-item', function (req, res) {
 
 // this is how we can get the request from axios
 app.post('/update-item', (req, res) => {
-	console.log(req.body.text);
-	res.send('success');
+	// findOneAndUpdate finds one item in our colleciton and updates it
+	// first arguemnt is what document you want to update
+	// first argument must be written like shown with the new keyword look below
+	// second arguemnt is what you want to update on that specific docuement
+	// second argumenet must have $set: and the object properties you want to update
+	// third arugment is the function that will get called once that database action is complete
+	db.collection('items').findOneAndUpdate(
+		{ _id: new mongodb.ObjectID(req.body.id) },
+		{ $set: req.body.text },
+		() => {
+			res.send('Sucess');
+		},
+	);
 });
