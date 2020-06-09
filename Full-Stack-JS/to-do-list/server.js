@@ -1,23 +1,29 @@
-let express = require('express')
-let mongodb = require('mongodb')
+let express = require('express');
+let mongodb = require('mongodb');
 
-let app = express()
-let db
+let app = express();
+let db;
 
-app.use(express.static('public'))
+app.use(express.static('public'));
 
-let connectionString = 'mongodb+srv://areid4118:vRhoBbgToz7lJyh5@cluster0-gkw6f.mongodb.net/ToDoApp?retryWrites=true&w=majority'
-mongodb.connect(connectionString, {useNewUrlParser: true, useUnifiedTopology: true}, function(err, client) {
-  db = client.db()
-  app.listen(3000)
-})
+let connectionString =
+	'mongodb+srv://areid4118:vRhoBbgToz7lJyh5@cluster0-gkw6f.mongodb.net/ToDoApp?retryWrites=true&w=majority';
+mongodb.connect(connectionString, { useNewUrlParser: true, useUnifiedTopology: true }, function (
+	err,
+	client,
+) {
+	db = client.db();
+	app.listen(3000);
+});
 
-app.use(express.json())
-app.use(express.urlencoded({extended: false}))
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
-app.get('/', function(req, res) {
-  db.collection('items').find().toArray(function(err, items) {
-	 res.send(`
+app.get('/', function (req, res) {
+	db.collection('items')
+		.find()
+		.toArray(function (err, items) {
+			res.send(`
 		<!DOCTYPE html>
 			<html>
 				<head>
@@ -71,18 +77,22 @@ app.get('/', function(req, res) {
 					</div>
 				</body>
 			</html>
-  		`)
-  })
-})
+		`);
+		});
+});
 
-app.post('/create-item', function(req, res) {
-  db.collection('items').insertOne({text: req.body.item}, function() {
-    res.redirect('/')
-  })
-})
+app.post('/create-item', function (req, res) {
+	db.collection('items').insertOne({ text: req.body.item }, function () {
+		res.redirect('/');
+	});
+});
 
-app.post('/update-item', function(req, res) {
-  db.collection('items').findOneAndUpdate({_id: new mongodb.ObjectId(req.body.id)}, {$set: {text: req.body.text}}, function() {
-    res.send("Success")
-  })
-})
+app.post('/update-item', function (req, res) {
+	db.collection('items').findOneAndUpdate(
+		{ _id: new mongodb.ObjectId(req.body.id) },
+		{ $set: { text: req.body.text } },
+		function () {
+			res.send('Success');
+		},
+	);
+});
