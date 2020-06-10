@@ -1,8 +1,14 @@
 let express = require('express');
 let mongodb = require('mongodb');
 
+const sanitizeHTML = require('sanitize-html');
+
 let app = express();
 let db;
+let port = process.env.PORT;
+if (port === null || port === '') {
+	port = 3000;
+}
 
 app.use(express.static('public'));
 
@@ -13,7 +19,7 @@ mongodb.connect(connectionString, { useNewUrlParser: true, useUnifiedTopology: t
 	client,
 ) {
 	db = client.db();
-	app.listen(3000);
+	app.listen(port);
 });
 
 app.use(express.json());
@@ -62,15 +68,17 @@ app.get('/', function (req, res) {
 });
 
 app.post('/create-item', function (req, res) {
-	db.collection('items').insertOne({ text: req.body.text }, function (err, info) {
+	let safeText = sanitizeHTML(req.body.text, { allowedTags: [], allowedAttributes: {} });
+	db.collection('items').insertOne({ text: safeText }, function (err, info) {
 		res.json(info.ops[0]);
 	});
 });
 
 app.post('/update-item', function (req, res) {
+	let safeText = sanitizeHTML(req.body.text, { allowedTags: [], allowedAttributes: {} });
 	db.collection('items').findOneAndUpdate(
 		{ _id: new mongodb.ObjectId(req.body.id) },
-		{ $set: { text: req.body.text } },
+		{ $set: { text: safeText } },
 		function () {
 			res.send('Success');
 		},
