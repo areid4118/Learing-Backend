@@ -1,37 +1,53 @@
 const User = require('../models/User');
 
-exports.login = (request, respone) => {
-	let user = new User(request.body);
+exports.login = function (req, res) {
+	let user = new User(req.body);
 	user
 		.login()
-		.then((result) => {
-			request.session.user = {
-				favColor: 'Blue',
-				username: user.data.username,
-			};
-			respone.send(result);
+		.then(function (result) {
+			req.session.user = { favColor: 'blue', username: user.data.username };
+			req.session.save(function () {
+				res.redirect('/');
+			});
 		})
-		.catch((err) => {
-			respone.send(err);
+		.catch(function (e) {
+			req.flash('errors', e);
+			req.session.save(function () {
+				res.redirect('/');
+			});
 		});
 };
 
-exports.logout = (request, respone) => {};
-
-exports.register = (request, respone) => {
-	let user = new User(request.body);
-	user.register();
-	if (user.errors.length) {
-		respone.send(user.errors);
-	} else {
-		respone.send('Congrats, there are no errors.');
-	}
+exports.logout = function (req, res) {
+	req.session.destroy(function () {
+		res.redirect('/');
+	});
 };
 
-exports.home = (request, respone) => {
-	if (request.session.user) {
-		respone.send('Welcome to the application');
+exports.register = function (req, res) {
+	let user = new User(req.body);
+	user
+		.register()
+		.then(() => {
+			req.session.user = { username: user.data.username };
+			req.session.save(function () {
+				res.redirect('/');
+			});
+		})
+		.catch((regErrors) => {
+			regErrors.forEach(function (error) {
+				req.flash('regErrors', error);
+			});
+			req.session.save(function () {
+				res.redirect('/');
+			});
+		});
+};
+
+exports.home = function (req, res) {
+	if (req.session.user) {
+		res.render('home-dashboard', { username: req.session.user.username });
 	} else {
-		respone.render('home-guest');
+		res.render('home-guest', { errors: req.flash('errors'), regErrors: req.flash('regErrors') });
 	}
 };
