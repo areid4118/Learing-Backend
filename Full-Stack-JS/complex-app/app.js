@@ -1,5 +1,16 @@
 const express = require('express');
+const session = require('express-session');
 const app = express();
+
+let sessionOptions = session({
+	secret: 'Javascript is cool',
+	resave: false,
+	saveUninitialized: false,
+	// represents 1 millsecond to 1 day
+	cookie: { maxAge: 1000 * 60 * 60 * 24, httpOnly: true },
+});
+
+app.use(sessionOptions);
 
 const router = require('./router');
 
